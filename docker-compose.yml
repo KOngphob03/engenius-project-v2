@@ -1,0 +1,52 @@
+name: engenius-project-v2
+
+services:
+  # --- Database (PostgreSQL) --- postgres:17-alpine 
+  db:
+    container_name: engenius-db
+    image: postgres:17-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      # เก็บข้อมูลไว้ในเครื่อง Host เพื่อให้ข้อมูลไม่หายเมื่อลบ Container
+      - ./pgdata:/var/lib/postgresql/data
+
+  # --- API (ElysiaJS + Bun) ---
+  api:
+    container_name: engenius-api
+    build: 
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:3000"
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    environment:
+      # การเชื่อมต่อจาก API ไปยัง DB (ใช้ชื่อ Service 'db' แทน localhost)
+      - DATABASE_URL=postgresql://admin:password123@db:5432/engenius_db
+    depends_on:
+      - db
+
+  # --- Frontend (Next.js + Bun) ---
+  frontend:
+    container_name: engenius-frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - INTERNAL_API_URL=http://api:3000
+    depends_on:
+      - api

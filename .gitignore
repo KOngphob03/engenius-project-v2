@@ -1,0 +1,19 @@
+# Environment
+.env
+
+# Database data
+pgdata/
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Next.js build
+frontend/.next/
+
+# Bun
+*.lockb
+
+# OS
+.DS_Store
+Thumbs.db
