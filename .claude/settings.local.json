@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose:*)",
+      "Read(//g/tmp/**)",
+      "Read(//g/lab/**)",
+      "Bash(cp:*)",
+      "Bash(\"G:/engenius-project-v2/frontend/public/.gitkeep\")"
+    ]
+  }
+}

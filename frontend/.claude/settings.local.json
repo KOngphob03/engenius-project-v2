@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bunx shadcn@latest add table pagination)",
+      "Bash(bun add:*)",
+      "Bash(bunx shadcn@latest add pagination)",
+      "Bash(bunx shadcn@latest add checkbox)",
+      "Bash(bun run:*)",
+      "Bash(taskkill /PID 3892 /F)",
+      "Bash(npx kill-port:*)",
+      "Bash(curl -s http://localhost:3001/api/users)",
+      "Bash(curl:*)",
+      "Bash(docker compose:*)"
+    ]
+  }
+}
