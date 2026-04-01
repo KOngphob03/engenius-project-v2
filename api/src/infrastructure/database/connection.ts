@@ -6,7 +6,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
-const connectionString = process.env.DATABASE_URL || 'postgresql://admin:password1234@localhost:5433/engenius_db';
+const connectionString = process.env.DATABASE_URL || 'postgresql://admin:password123@localhost:5432/engenius_db';
 
 // Create connection
 const client = postgres(connectionString);

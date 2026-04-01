@@ -36,6 +36,7 @@ const PUBLIC_ROUTES = [
   "/",
   "/login",
   "/api",
+  "/openapi",
 ]
 
 /**
@@ -52,6 +53,30 @@ const SESSION_COOKIE_NAME = "better-auth.session_token"
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Proxy /openapi to backend API
+  if (pathname === "/openapi" || pathname.startsWith("/openapi")) {
+    const apiUrl = process.env.INTERNAL_API_URL || "http://api:3000"
+    const url = new URL(pathname, apiUrl)
+
+    // Proxy headers
+    const headers = new Headers(request.headers)
+    headers.set("host", new URL(apiUrl).host)
+
+    // Forward request to backend
+    const response = await fetch(url.toString(), {
+      method: request.method,
+      headers,
+      body: request.body,
+    })
+
+    // Return response from backend
+    return new NextResponse(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers as HeadersInit,
+    })
+  }
 
   // ตรวจสอบว่าเป็น Public Route หรือไม่
   const isPublicRoute = PUBLIC_ROUTES.some((route) =>

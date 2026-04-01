@@ -17,7 +17,9 @@
       "Bash(docker-compose restart:*)",
       "Bash(bun install:*)",
       "Bash(docker exec:*)",
-      "Bash(docker volume:*)"
+      "Bash(docker volume:*)",
+      "Bash(curl -s http://localhost:3000/openapi)",
+      "Bash(curl -v http://localhost:3000/openapi)"
     ]
   }
 }
