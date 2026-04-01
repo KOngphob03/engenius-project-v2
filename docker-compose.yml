@@ -23,7 +23,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
     ports:
-      - "8000:3000"
+      - "3001:3000"
     volumes:
       - ./api:/app
       - /app/node_modules

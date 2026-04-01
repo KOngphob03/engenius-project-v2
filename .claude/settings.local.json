@@ -10,7 +10,14 @@
       "Bash(docker-compose down:*)",
       "Bash(docker-compose up:*)",
       "Bash(git ls-tree:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(curl -s http://localhost:3001/openapi)",
+      "Bash(curl -s http://localhost:3001/api/openapi)",
+      "Bash(bun add:*)",
+      "Bash(docker-compose restart:*)",
+      "Bash(bun install:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker volume:*)"
     ]
   }
 }
