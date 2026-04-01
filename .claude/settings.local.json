@@ -6,7 +6,11 @@
       "Read(//g/lab/**)",
       "Bash(cp:*)",
       "Bash(\"G:/engenius-project-v2/frontend/public/.gitkeep\")",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(git stash:*)"
     ]
   }
 }

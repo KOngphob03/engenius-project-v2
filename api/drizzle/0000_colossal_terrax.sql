@@ -1,0 +1,41 @@
+CREATE TABLE "payment_stripe" (
+	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "payment_stripe_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
+	"user_id" varchar(255) DEFAULT '' NOT NULL,
+	"username" varchar(255) NOT NULL,
+	"price" varchar(10) NOT NULL,
+	"day" integer NOT NULL,
+	"subjects" json DEFAULT '[]'::json,
+	"sheets" json DEFAULT '[]'::json,
+	"status" boolean NOT NULL,
+	"activate" boolean NOT NULL,
+	"activate_code" varchar(255) NOT NULL,
+	"created_at" timestamp DEFAULT now(),
+	"updated_at" timestamp DEFAULT now(),
+	"deleted_at" timestamp
+);
+--> statement-breakpoint
+CREATE TABLE "user" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"firstname" varchar(255) NOT NULL,
+	"lastname" varchar(255) NOT NULL,
+	"email" varchar(255) NOT NULL,
+	"password" varchar(255),
+	"phone" varchar(20) NOT NULL,
+	"university" varchar(255) NOT NULL,
+	"department" varchar(255) NOT NULL,
+	"exp" timestamp DEFAULT now(),
+	"exp_korpor" timestamp DEFAULT now(),
+	"exp_otp" timestamp DEFAULT now(),
+	"subject" json DEFAULT '{"subjects":[],"sheets":[]}'::json,
+	"role" json DEFAULT '["user"]'::json,
+	"created_at" timestamp DEFAULT now(),
+	"updated_at" timestamp DEFAULT now(),
+	"time" integer DEFAULT 1800,
+	"activated" boolean DEFAULT false,
+	"otp" varchar(10) DEFAULT '',
+	"examination_fields" json DEFAULT '[]'::json,
+	"token" varchar DEFAULT '',
+	"profile" varchar DEFAULT '',
+	"deleted_at" timestamp,
+	CONSTRAINT "user_email_unique" UNIQUE("email")
+);
