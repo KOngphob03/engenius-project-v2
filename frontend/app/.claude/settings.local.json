@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find 'C:/Users/Khaow Com/Desktop/engenius-project/apps/web' -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\) ! -path */node_modules/* ! -path */.next/*)",
+      "Bash(GIT_DIR=.git GIT_WORK_TREE=. git status)"
+    ]
+  }
+}
