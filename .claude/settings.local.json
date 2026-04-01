@@ -19,7 +19,15 @@
       "Bash(docker exec:*)",
       "Bash(docker volume:*)",
       "Bash(curl -s http://localhost:3000/openapi)",
-      "Bash(curl -v http://localhost:3000/openapi)"
+      "Bash(curl -v http://localhost:3000/openapi)",
+      "Bash(curl -s http://localhost:3000/login)",
+      "Bash(curl:*)",
+      "Bash(bunx drizzle-kit:*)",
+      "Bash(DATABASE_URL=\"postgresql://admin:password123@localhost:5432/engenius_db\" bunx drizzle-kit push)",
+      "Bash(DATABASE_URL=\"postgresql://admin:password123@localhost:5432/engenius_db\" bunx drizzle-kit push --force)",
+      "Bash(bun -e \"const bcrypt = require\\(''bcrypt''\\); const hash = bcrypt.hashSync\\(''12341234'', 10\\); console.log\\(hash\\);\")",
+      "Bash(bun -e \"const bcrypt = require\\(''bcrypt''\\); const hash = bcrypt.hashSync\\(''12341234'', 10\\); console.log\\(''Hash:'', hash\\); const match = bcrypt.compareSync\\(''12341234'', hash\\); console.log\\(''Match:'', match\\);\")",
+      "Bash(bun -e \"const bcrypt = require\\(''bcrypt''\\); const hash = bcrypt.hashSync\\(''password'', 10\\); console.log\\(''Hash for password:'', hash\\);\")"
     ]
   }
 }
