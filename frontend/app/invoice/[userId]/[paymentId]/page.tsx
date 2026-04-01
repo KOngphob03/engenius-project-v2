@@ -1,56 +1,157 @@
 "use client";
 
+import { useState, useEffect, use } from "react";
 import { Printer, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const mockData = {
-  date: "28 มี.ค. 2026",
-  bookNo: "1",
-  invoiceNo: "INV-2026-001",
-  seller: {
-    name: "บริษัท เอ็นจิเนียส จำกัด",
-    address: "123/45 ถนนสุขุมวิท แขวงคลองตันเหนือ เขตวัฒนา กรุงเทพฯ 10110",
-    taxId: "0105551234567",
-    phone: "02-123-4567",
-  },
-  buyer: {
-    name: "นายอดุลวิทย์ ชินาภาษ",
-    address: "456/78 ถนนพหลโยธิน แขวงสามเสนใน เขตพญาไท กรุงเทพฯ 10400",
-    taxId: "1103700123456",
-    phone: "081-234-5678",
-  },
-  items: [
-    {
-      no: "1",
-      description: "ค่าบริการด้านเทคนิคและการพัฒนาซอฟต์แวร์",
-      quantity: "1",
-      unitPrice: "100,000.00",
-      amount: "100,000.00",
-    },
-    {
-      no: "2",
-      description: "ค่าธรรมเนียมการดูแลรักษาระบบประจำเดือน",
-      quantity: "1",
-      unitPrice: "15,000.00",
-      amount: "15,000.00",
-    },
-    {
-      no: "3",
-      description: "ค่าใช้จ่ายในการติดตั้งและทดสอบระบบ",
-      quantity: "1",
-      unitPrice: "10,000.00",
-      amount: "10,000.00",
-    },
-  ],
-  subtotal: "125,000.00",
-  vat: "8,750.00",
-  total: "133,750.00",
+interface InvoiceData {
+  date: string;
+  invoiceNo: string;
+  bookNo: string;
+  amount: number;
+  price: string;
+  day: number;
+  subjects: string[];
+  sheets: string[];
+  user: {
+    name: string;
+    email: string;
+    phone: string;
+    university: string;
+    department: string;
+  } | null;
+}
+
+const SELLER_INFO = {
+  name: "บริษัท เนเบอร์ซอฟต์ จำกัด",
+  address: "123/45 ถนนสุขุมวิท แขวงคลองตันเหนือ เขตวัฒนา กรุงเทพฯ 10110",
+  taxId: "0105551234567",
+  phone: "02-123-4567",
 };
 
-export default function InvoicePage() {
+export default function InvoicePage({
+  params,
+}: {
+  params: Promise<{ userId: string; paymentId: string }>;
+}) {
+  const { userId, paymentId } = use(params);
+  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchInvoiceData();
+  }, [userId, paymentId]);
+
+  const fetchInvoiceData = async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem("access_token");
+      const response = await fetch(`/api/users/${userId}/payments/${paymentId}`, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.payment) {
+        setInvoiceData(data.payment);
+      } else {
+        setError(data.error || "ไม่พบข้อมูลใบกำกับภาษี");
+      }
+    } catch (err) {
+      console.error("Fetch invoice error:", err);
+      setError("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handlePrint = () => {
     window.print();
   };
+
+  // Format currency
+  const formatCurrency = (amount: number | string): string => {
+    const num = typeof amount === "string" ? parseFloat(amount) : amount;
+    return new Intl.NumberFormat("th-TH", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(num);
+  };
+
+  // Calculate VAT and totals
+  const subtotal = invoiceData ? parseFloat(invoiceData.price) : 0;
+  const vat = subtotal * 0.07;
+  const total = subtotal + vat;
+
+  // Generate invoice items based on subjects/sheets
+  const generateItems = () => {
+    if (!invoiceData) return [];
+
+    const items = [];
+
+    // Add subjects as items
+    if (invoiceData.subjects && invoiceData.subjects.length > 0) {
+      invoiceData.subjects.forEach((subject, idx) => {
+        items.push({
+          no: (idx + 1).toString(),
+          description: `ค่าเรียนวิชา: ${subject}`,
+          quantity: "1",
+          unitPrice: formatCurrency(subtotal / (invoiceData.subjects.length + (invoiceData.sheets?.length || 0))),
+          amount: formatCurrency(subtotal / (invoiceData.subjects.length + (invoiceData.sheets?.length || 0))),
+        });
+      });
+    }
+
+    // Add sheets as items
+    if (invoiceData.sheets && invoiceData.sheets.length > 0) {
+      invoiceData.sheets.forEach((sheet, idx) => {
+        items.push({
+          no: ((invoiceData.subjects?.length || 0) + idx + 1).toString(),
+          description: `ค่าใบงาน: ${sheet}`,
+          quantity: "1",
+          unitPrice: formatCurrency(subtotal / (invoiceData.sheets.length + (invoiceData.subjects?.length || 0))),
+          amount: formatCurrency(subtotal / (invoiceData.sheets.length + (invoiceData.subjects?.length || 0))),
+        });
+      });
+    }
+
+    // If no subjects or sheets, add a generic item
+    if (items.length === 0) {
+      items.push({
+        no: "1",
+        description: `ค่าบริการการศึกษา (${invoiceData.day} วัน)`,
+        quantity: "1",
+        unitPrice: formatCurrency(subtotal),
+        amount: formatCurrency(subtotal),
+      });
+    }
+
+    return items;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-blue-600" />
+      </div>
+    );
+  }
+
+  if (error || !invoiceData) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error || "ไม่พบข้อมูล"}</p>
+          <Button onClick={() => window.history.back()}>ย้อนกลับ</Button>
+        </div>
+      </div>
+    );
+  }
+
+  const items = generateItems();
 
   return (
     <>
@@ -101,10 +202,9 @@ export default function InvoicePage() {
           </div>
         </div>
 
-        {/* Invoice Preview - Responsive scaling */}
+        {/* Invoice Preview */}
         <div className="flex justify-center p-4 sm:p-8">
           <div className="invoice-page relative w-full max-w-[210mm] bg-white shadow-xl">
-            {/* Invoice Content - A4 proportion */}
             <div className="aspect-[210/297] w-full p-6 sm:p-8 md:p-10 lg:p-12">
               {/* Header */}
               <div className="mb-4 flex items-center justify-between">
@@ -126,20 +226,20 @@ export default function InvoicePage() {
                 <div className="flex items-center gap-2">
                   <span className="font-medium whitespace-nowrap">วันที่</span>
                   <span className="border-b border-dotted border-gray-400 px-2 py-0.5 min-w-[100px] text-center">
-                    {mockData.date}
+                    {invoiceData.date}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1">
                     <span className="font-medium whitespace-nowrap">เล่มที่</span>
                     <span className="border-b border-dotted border-gray-400 px-2 py-0.5 min-w-[50px] text-center">
-                      {mockData.bookNo}
+                      {invoiceData.bookNo}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="font-medium whitespace-nowrap">เลขที่</span>
                     <span className="border-b border-dotted border-gray-400 px-2 py-0.5 min-w-[80px] text-center">
-                      {mockData.invoiceNo}
+                      {invoiceData.invoiceNo}
                     </span>
                   </div>
                 </div>
@@ -152,23 +252,23 @@ export default function InvoicePage() {
                   <div className="flex items-center gap-2">
                     <span className="font-medium whitespace-nowrap min-w-[100px] sm:min-w-[120px]">ชื่อผู้ขาย</span>
                     <span className="flex-1 border-b border-dotted border-gray-400 px-2 py-0.5 break-words">
-                      {mockData.seller.name}
+                      {SELLER_INFO.name}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="font-medium whitespace-nowrap min-w-[100px] sm:min-w-[120px]">ที่อยู่</span>
                     <span className="flex-1 border-b border-dotted border-gray-400 px-2 py-0.5 break-words">
-                      {mockData.seller.address}
+                      {SELLER_INFO.address}
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <span className="font-medium whitespace-nowrap">เลขประจำตัวผู้เสียภาษี</span>
                     <span className="border-b border-dotted border-gray-400 px-2 py-0.5 break-all sm:flex-1">
-                      {mockData.seller.taxId}
+                      {SELLER_INFO.taxId}
                     </span>
                     <span className="font-medium whitespace-nowrap">โทรศัพท์</span>
                     <span className="border-b border-dotted border-gray-400 px-2 py-0.5">
-                      {mockData.seller.phone}
+                      {SELLER_INFO.phone}
                     </span>
                   </div>
                 </div>
@@ -178,23 +278,23 @@ export default function InvoicePage() {
                   <div className="flex items-center gap-2">
                     <span className="font-medium whitespace-nowrap min-w-[100px] sm:min-w-[120px]">ชื่อผู้ซื้อ</span>
                     <span className="flex-1 border-b border-dotted border-gray-400 px-2 py-0.5 break-words">
-                      {mockData.buyer.name}
+                      {invoiceData.user?.name || "-"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="font-medium whitespace-nowrap min-w-[100px] sm:min-w-[120px]">ที่อยู่</span>
                     <span className="flex-1 border-b border-dotted border-gray-400 px-2 py-0.5 break-words">
-                      {mockData.buyer.address}
+                      {invoiceData.user?.university || invoiceData.user?.department || "-"}
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <span className="font-medium whitespace-nowrap">เลขประจำตัวผู้เสียภาษี</span>
                     <span className="border-b border-dotted border-gray-400 px-2 py-0.5 break-all sm:flex-1">
-                      {mockData.buyer.taxId}
+                      -
                     </span>
                     <span className="font-medium whitespace-nowrap">โทรศัพท์</span>
                     <span className="border-b border-dotted border-gray-400 px-2 py-0.5">
-                      {mockData.buyer.phone}
+                      {invoiceData.user?.phone || "-"}
                     </span>
                   </div>
                 </div>
@@ -213,8 +313,8 @@ export default function InvoicePage() {
 
                 {/* Table Body */}
                 <div className="min-h-[180px]">
-                  {mockData.items.map((item, idx) => (
-                    <div key={idx} className="flex border-b border-gray-200 text-xs sm:text-sm">
+                  {items.map((item) => (
+                    <div key={item.no} className="flex border-b border-gray-200 text-xs sm:text-sm">
                       <div className="w-[10%] text-center border-r border-gray-200 py-2">{item.no}</div>
                       <div className="w-[40%] sm:w-[45%] px-2 py-2 break-words border-r border-gray-200">{item.description}</div>
                       <div className="w-[15%] text-center border-r border-gray-200 py-2 hidden sm:block">{item.quantity}</div>
@@ -231,7 +331,7 @@ export default function InvoicePage() {
                       มูลค่ารวมก่อนเสียภาษี
                     </div>
                     <div className="w-[40%] sm:w-[30%] text-center font-medium text-gray-800 border-l border-gray-300">
-                      {mockData.subtotal}
+                      {formatCurrency(subtotal)}
                     </div>
                   </div>
                   <div className="flex py-1.5">
@@ -239,7 +339,7 @@ export default function InvoicePage() {
                       ภาษีมูลค่าเพิ่ม (VAT 7%)
                     </div>
                     <div className="w-[40%] sm:w-[30%] text-center font-medium text-gray-800 border-l border-gray-300">
-                      {mockData.vat}
+                      {formatCurrency(vat)}
                     </div>
                   </div>
                   <div className="flex py-2 border-t border-gray-300">
@@ -247,7 +347,7 @@ export default function InvoicePage() {
                       ยอดรวมสุทธิ
                     </div>
                     <div className="w-[40%] sm:w-[30%] text-center font-bold text-gray-900 border-l border-gray-300">
-                      {mockData.total}
+                      {formatCurrency(total)}
                     </div>
                   </div>
                 </div>

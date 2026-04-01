@@ -27,7 +27,17 @@
       "Bash(DATABASE_URL=\"postgresql://admin:password123@localhost:5432/engenius_db\" bunx drizzle-kit push --force)",
       "Bash(bun -e \"const bcrypt = require\\(''bcrypt''\\); const hash = bcrypt.hashSync\\(''12341234'', 10\\); console.log\\(hash\\);\")",
       "Bash(bun -e \"const bcrypt = require\\(''bcrypt''\\); const hash = bcrypt.hashSync\\(''12341234'', 10\\); console.log\\(''Hash:'', hash\\); const match = bcrypt.compareSync\\(''12341234'', hash\\); console.log\\(''Match:'', match\\);\")",
-      "Bash(bun -e \"const bcrypt = require\\(''bcrypt''\\); const hash = bcrypt.hashSync\\(''password'', 10\\); console.log\\(''Hash for password:'', hash\\);\")"
+      "Bash(bun -e \"const bcrypt = require\\(''bcrypt''\\); const hash = bcrypt.hashSync\\(''password'', 10\\); console.log\\(''Hash for password:'', hash\\);\")",
+      "Bash(psql:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker restart:*)",
+      "Bash(while read:*)",
+      "Bash(do echo:*)",
+      "Bash(break)",
+      "Bash(done)",
+      "Bash(TOKEN=\"eyJ1c2VySWQiOiJhYzMzYWE5Ni1lYjNjLTQxZWItYWFiOC1hM2JjZTg4YWE2OTQiLCJpYXQiOjE3NzUwMTQ1OTEyMjUsImV4cCI6MTc3NTYxOTM5MTIyNX0=\")",
+      "Bash(TOKEN=\"eyJ1c2VySWQiOiJhMTExMTExMS0xMTExLTExMTEtMTExMS0xMTExMTExMTExMTEiLCJpYXQiOjE3NzUwMTQ4MDE3ODMsImV4cCI6MTc3NTYxOTYwMTc4M30=\")",
+      "Bash(docker-compose ps:*)"
     ]
   }
 }

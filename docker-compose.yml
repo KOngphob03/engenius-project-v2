@@ -36,15 +36,11 @@ services:
   # --- Frontend (Next.js + Bun) ---
   frontend:
     container_name: engenius-frontend
-    build: 
+    build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
       - INTERNAL_API_URL=http://api:3000

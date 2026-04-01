@@ -15,12 +15,20 @@ const nextConfig: NextConfig = {
         destination: `${apiUrl}/openapi/:path*`,
       },
       {
+        source: "/users/:path*",
+        destination: `${apiUrl}/users/:path*`,
+      },
+      {
         source: "/auth/:path*",
         destination: `${apiUrl}/auth/:path*`,
       },
       {
+        source: "/api/users/:path*",
+        destination: `${apiUrl}/users/:path*`,
+      },
+      {
         source: "/api/:path*",
-        destination: `${apiUrl}/api/:path*`,
+        destination: `${apiUrl}/:path*`,
       },
     ]
   },

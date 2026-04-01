@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
  */
 export type Transaction = {
   id: string
+  userId?: string
   date: string
   time: string
   amount: number
@@ -23,7 +24,10 @@ export type Transaction = {
 /**
  * Action Cell Component - ปุ่ม "พิมพ์" สีฟ้า
  */
-function ActionCell({ txId }: { txId: string }) {
+function ActionCell({ txId, userId }: { txId: string; userId?: string }) {
+  // Use userId if available, otherwise use txId as fallback
+  const invoicePath = userId ? `/invoice/${userId}/${txId}` : `/invoice/${txId}`
+
   return (
     <Button
       asChild
@@ -31,7 +35,7 @@ function ActionCell({ txId }: { txId: string }) {
       className="bg-blue-600 hover:bg-blue-700 text-white"
       size="sm"
     >
-      <a href={`/invoice/${txId}`}>พิมพ์</a>
+      <a href={invoicePath}>พิมพ์</a>
     </Button>
   )
 }
@@ -102,8 +106,9 @@ export const columns: ColumnDef<Transaction>[] = [
     header: () => <div className="font-semibold">Action</div>,
     cell: ({ row }) => {
       const txId = row.original.id
+      const userId = row.original.userId
 
-      return <ActionCell txId={txId} />
+      return <ActionCell txId={txId} userId={userId} />
     },
   },
 ]

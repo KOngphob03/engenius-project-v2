@@ -56,6 +56,8 @@ function Toast({
 
 /* ── Main page ── */
 export default function LoginPage() {
+  console.log("🔥 LoginPage component mounted!");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -70,6 +72,7 @@ export default function LoginPage() {
 
   /* validate & submit */
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("🚀 handleSubmit called!");
     e.preventDefault();
 
     const newErrors: { email?: string; password?: string } = {};
@@ -82,8 +85,6 @@ export default function LoginPage() {
 
     if (!password) {
       newErrors.password = "กรุณากรอกรหัสผ่าน";
-    } else if (password.length < 6) {
-      newErrors.password = "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -95,9 +96,44 @@ export default function LoginPage() {
     setErrors({});
     setToast(null);
     setIsLoading(true);
-    // Simulate login
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsLoading(false);
+
+    try {
+      console.log("🔐 Attempting login...", { email });
+      const response = await fetch("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      console.log("📡 Response status:", response.status);
+      const data = await response.json();
+      console.log("📦 Response data:", data);
+
+      if (!response.ok || !data.success) {
+        setToast(data.error || "เข้าสู่ระบบไม่สำเร็จ");
+        setIsLoading(false);
+        return;
+      }
+
+      // Store token
+      if (!data.tokens?.accessToken) {
+        setToast("ไม่ได้รับ token จากระบบ");
+        setIsLoading(false);
+        return;
+      }
+
+      localStorage.setItem("access_token", data.tokens.accessToken);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      // Set cookie for middleware
+      document.cookie = `better-auth.session_token=${data.tokens.accessToken}; path=/; max-age=604800`;
+
+      // Redirect to search page
+      window.location.href = "/search";
+    } catch (error) {
+      setToast("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   /* clear field error on change */
@@ -137,7 +173,7 @@ export default function LoginPage() {
 
             <div className="mt-4 text-center">
               <CardTitle className="text-xl font-bold text-gray-800">
-                เข้าสู่ระบบ (Admin)
+                heema
               </CardTitle>
               <CardDescription className="mt-1.5 text-sm text-gray-500">
                 กรุณากรอกข้อมูลเพื่อเข้าสู่ระบบจัดการ

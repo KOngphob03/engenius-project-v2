@@ -35,8 +35,6 @@ const PROTECTED_ROUTES = [
 const PUBLIC_ROUTES = [
   "/",
   "/login",
-  "/api",
-  "/openapi",
 ]
 
 /**
@@ -54,13 +52,37 @@ const SESSION_COOKIE_NAME = "better-auth.session_token"
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Proxy /openapi to backend API
-  if (pathname === "/openapi" || pathname.startsWith("/openapi")) {
-    const apiUrl = process.env.INTERNAL_API_URL || "http://api:3000"
-    const url = new URL(pathname, apiUrl)
+  // Proxy /api, /auth, /openapi, and /users to backend API
+  const isApiRoute =
+    pathname === "/openapi" || pathname.startsWith("/openapi") ||
+    pathname === "/auth" || pathname.startsWith("/auth") ||
+    pathname === "/users" || pathname.startsWith("/users") ||
+    pathname === "/api" || pathname.startsWith("/api")
 
-    // Proxy headers
-    const headers = new Headers(request.headers)
+  if (isApiRoute) {
+    const apiUrl = process.env.INTERNAL_API_URL || "http://api:3000"
+
+    // Build target URL - remove /api prefix from all API routes
+    let targetPath = pathname
+    if (targetPath.startsWith("/api/")) {
+      targetPath = targetPath.replace("/api/", "/")
+    }
+
+    const url = new URL(targetPath, apiUrl)
+
+    // Preserve query string
+    if (request.nextUrl.search) {
+      url.search = request.nextUrl.search
+    }
+
+    // Proxy headers - preserve Authorization header
+    const headers = new Headers()
+    // Copy all headers except host
+    for (const [key, value] of request.headers.entries()) {
+      if (key !== "host") {
+        headers.set(key, value)
+      }
+    }
     headers.set("host", new URL(apiUrl).host)
 
     // Forward request to backend
